@@ -82,19 +82,15 @@ func main() {
 		for {
 			var msg models.Message
 			if err := c.ReadJSON(&msg); err != nil {
-				if err != nil {
-					if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
-						room.RemovePlayer(playerID)
-						room.NotifyOther(playerID, map[string]any{
-							"type": "player_left",
-						})
-					} else {
-						log.Println("WebSocket error:", err)
-					}
-					break
+				if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
+					room.RemovePlayer(playerID)
+					room.NotifyOther(playerID, map[string]any{
+						"type": "player_left",
+					})
+				} else {
+					log.Println("WebSocket error:", err)
 				}
-
-				log.Println("❌ Error reading message:", err)
+				break
 			}
 
 			if msg.Type == messages.START {
@@ -166,6 +162,7 @@ func main() {
 		for {
 			select {
 			case room := <-roomChan:
+				log.Println("Room", room.Number, "is ready")
 				go room.GameLoop()
 			}
 		}

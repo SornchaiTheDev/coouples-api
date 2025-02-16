@@ -20,7 +20,6 @@ type Room struct {
 }
 
 func (r *Room) AddPlayer(conn *websocket.Conn, playerID uint) {
-
 	r.Players = append(r.Players, &Player{
 		Conn: conn,
 		ID:   playerID,
@@ -28,7 +27,6 @@ func (r *Room) AddPlayer(conn *websocket.Conn, playerID uint) {
 }
 
 func (r *Room) RemovePlayer(playerID uint) {
-
 	for i, player := range r.Players {
 		if player.ID == playerID {
 			r.Players = append(r.Players[:i], r.Players[i+1:]...)
@@ -67,7 +65,6 @@ func (r *Room) NotifyAll(msg map[string]any) {
 }
 
 func (r *Room) NotifyOther(playerID uint, msg map[string]any) {
-
 	jsonMarshal, err := json.Marshal(msg)
 	if err != nil {
 		log.Println("❌ Error marshaling message:", err)
@@ -83,7 +80,6 @@ func (r *Room) NotifyOther(playerID uint, msg map[string]any) {
 }
 
 func (r *Room) Pick(playerID uint, cardID uint) {
-
 	r.Picks[playerID-1] = Pick{
 		PlayerID: playerID,
 		CardID:   cardID,
@@ -91,12 +87,10 @@ func (r *Room) Pick(playerID uint, cardID uint) {
 }
 
 func (r *Room) ResetPicks() {
-
 	r.Picks = [2]Pick{}
 }
 
 func (r *Room) SetAvatar(playerID uint, avatar string) {
-
 	for _, player := range r.Players {
 		if player.ID == playerID {
 			player.Avatar = avatar
@@ -105,7 +99,6 @@ func (r *Room) SetAvatar(playerID uint, avatar string) {
 }
 
 func (r *Room) GetGameDetail() map[string]any {
-
 	detail := map[string]any{
 		"status":  r.Status,
 		"players": []string{r.Players[0].Avatar, r.Players[1].Avatar},
@@ -116,7 +109,6 @@ func (r *Room) GetGameDetail() map[string]any {
 }
 
 func (r *Room) GameLoop() {
-
 	for {
 		if r.Status == status.Setup {
 			readyPlayers := 0
@@ -163,12 +155,12 @@ func (r *Room) GameLoop() {
 					r.Score++
 				}
 
+				r.ResetPicks()
 				r.NotifyAll(map[string]any{
 					"type": "game_detail",
 					"data": r.GetGameDetail(),
 				})
 
-				r.ResetPicks()
 				r.Status = status.Shuffling
 			}
 		}
