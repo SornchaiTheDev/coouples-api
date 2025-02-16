@@ -1,9 +1,14 @@
 package models
 
-import "github.com/gofiber/contrib/websocket"
+import (
+	"sync"
+
+	"github.com/gofiber/contrib/websocket"
+)
 
 type Player struct {
-	ID   uint
+	ID     uint
 	Avatar string
-	Conn *websocket.Conn
+	Conn   *websocket.Conn
+	Mu     sync.Mutex
 }

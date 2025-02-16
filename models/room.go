@@ -57,10 +57,12 @@ func (r *Room) NotifyAll(msg map[string]any) {
 	}
 
 	for _, player := range r.Players {
+		player.Mu.Lock()
 		err := player.Conn.WriteMessage(websocket.TextMessage, jsonMarshal)
 		if err != nil {
 			log.Println("❌ Error writing message:", err)
 		}
+		player.Mu.Unlock()
 	}
 }
 
@@ -71,11 +73,14 @@ func (r *Room) NotifyOther(playerID uint, msg map[string]any) {
 	}
 
 	for _, player := range r.Players {
+		player.Mu.Lock()
 		if player.ID == playerID {
+			player.Mu.Unlock()
 			continue
 		}
 
 		player.Conn.WriteMessage(websocket.TextMessage, jsonMarshal)
+		player.Mu.Unlock()
 	}
 }
 
