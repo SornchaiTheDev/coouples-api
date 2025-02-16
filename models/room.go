@@ -20,8 +20,6 @@ type Room struct {
 }
 
 func (r *Room) AddPlayer(conn *websocket.Conn, playerID uint) {
-	r.Mu.Lock()
-	defer r.Mu.Unlock()
 
 	r.Players = append(r.Players, &Player{
 		Conn: conn,
@@ -30,8 +28,6 @@ func (r *Room) AddPlayer(conn *websocket.Conn, playerID uint) {
 }
 
 func (r *Room) RemovePlayer(playerID uint) {
-	r.Mu.Lock()
-	defer r.Mu.Unlock()
 
 	for i, player := range r.Players {
 		if player.ID == playerID {
@@ -41,9 +37,7 @@ func (r *Room) RemovePlayer(playerID uint) {
 }
 
 func (r *Room) Start() {
-	r.Mu.Lock()
 	defer func() {
-		r.Mu.Unlock()
 		r.NotifyAll(map[string]any{
 			"type": "setup_phase",
 		})
@@ -55,13 +49,14 @@ func (r *Room) Start() {
 }
 
 func (r *Room) NotifyAll(msg map[string]any) {
+	log.Println("📡 Sending message to all players:", msg)
+	r.Mu.Lock()
+	defer r.Mu.Unlock()
+
 	jsonMarshal, err := json.Marshal(msg)
 	if err != nil {
 		log.Println("❌ Error marshaling message:", err)
 	}
-
-	r.Mu.Lock()
-	defer r.Mu.Unlock()
 
 	for _, player := range r.Players {
 		err := player.Conn.WriteMessage(websocket.TextMessage, jsonMarshal)
@@ -72,8 +67,6 @@ func (r *Room) NotifyAll(msg map[string]any) {
 }
 
 func (r *Room) NotifyOther(playerID uint, msg map[string]any) {
-	r.Mu.Lock()
-	defer r.Mu.Unlock()
 
 	jsonMarshal, err := json.Marshal(msg)
 	if err != nil {
@@ -90,8 +83,6 @@ func (r *Room) NotifyOther(playerID uint, msg map[string]any) {
 }
 
 func (r *Room) Pick(playerID uint, cardID uint) {
-	r.Mu.Lock()
-	defer r.Mu.Unlock()
 
 	r.Picks[playerID-1] = Pick{
 		PlayerID: playerID,
@@ -100,15 +91,11 @@ func (r *Room) Pick(playerID uint, cardID uint) {
 }
 
 func (r *Room) ResetPicks() {
-	r.Mu.Lock()
-	defer r.Mu.Unlock()
 
 	r.Picks = [2]Pick{}
 }
 
 func (r *Room) SetAvatar(playerID uint, avatar string) {
-	r.Mu.Lock()
-	defer r.Mu.Unlock()
 
 	for _, player := range r.Players {
 		if player.ID == playerID {
@@ -118,8 +105,6 @@ func (r *Room) SetAvatar(playerID uint, avatar string) {
 }
 
 func (r *Room) GetGameDetail() map[string]any {
-	r.Mu.Lock()
-	defer r.Mu.Unlock()
 
 	detail := map[string]any{
 		"status":  r.Status,
@@ -131,6 +116,7 @@ func (r *Room) GetGameDetail() map[string]any {
 }
 
 func (r *Room) GameLoop() {
+
 	for {
 		if r.Status == status.Setup {
 			readyPlayers := 0

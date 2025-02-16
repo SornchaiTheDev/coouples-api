@@ -126,28 +126,6 @@ func main() {
 				room.Start()
 			}
 
-			if msg.Type == messages.GET_DETAIL {
-				detail := map[string]any{
-					"status": room.Status,
-					"players": []string{
-						room.Players[0].Avatar,
-						room.Players[1].Avatar,
-					},
-					"score": room.Score,
-				}
-
-				bytes, err := json.Marshal(map[string]any{
-					"type": "game_detail",
-					"data": detail,
-				})
-				if err != nil {
-					log.Println("❌ Error marshaling message:", err)
-				}
-
-				c.WriteMessage(websocket.TextMessage, bytes)
-
-			}
-
 			if msg.Type == messages.CREATE_AVATAR {
 				room.SetAvatar(playerID, msg.Data)
 				log.Println("Player ", playerID, "had setup the avatar")
