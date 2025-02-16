@@ -15,14 +15,17 @@ COPY . .
 # Build the application
 RUN go build -o main .
 
-# Use a minimal base image for final execution
-FROM gcr.io/distroless/base-debian12
+# Use Alpine as the minimal base image for final execution
+FROM alpine:latest
 
 # Set the working directory
 WORKDIR /root/
 
 # Copy the built binary from the builder stage
 COPY --from=builder /app/main .
+
+# Install necessary dependencies (if any)
+RUN apk --no-cache add ca-certificates
 
 # Expose port (change if needed)
 EXPOSE 8080
