@@ -19,7 +19,7 @@ RUN go build -o main .
 FROM alpine:latest
 
 # Set the working directory
-WORKDIR /root/
+WORKDIR /app
 
 # Copy the built binary from the builder stage
 COPY --from=builder /app/main .
